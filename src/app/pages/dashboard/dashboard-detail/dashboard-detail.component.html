@@ -1,0 +1,110 @@
+<div class="wrapper no-skin">
+  <app-top></app-top>
+  <div class="main-container ace-save-state" id="main-container">
+    <div id="sidebar" class="sidebar responsive ace-save-state compact">
+      <app-menu treemodule="M0" treeitem="V1"></app-menu>
+    </div>
+    <div class="main-content">
+      <div class="main-content-inner">
+        <app-breadcrumb Showtitle="欢迎页面" Subtitle="欢迎页面副标题" Web="站点" Module="模块" Page="欢迎页面"></app-breadcrumb>
+        <div class="page-content" *ngIf="dashboard">
+
+          <div class="page-header">
+            <h1>
+              {{dashboard.name}} 编辑
+              <small>
+                <i class="ace-icon fa fa-angle-double-right"></i>
+                dashboard detail
+              </small>
+            </h1>
+          </div>
+          <div class="main-content">
+            <form class="form-horizontal" role="form" *ngIf="dashboard" #formRef="ngForm" (ngSubmit)="onSubmit(formRef.value)">
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-name">名称</label>
+
+                <div class="col-sm-11">
+                  <input type="text" id="form-name" placeholder="大屏名称" [(ngModel)]="dashboard.name" name="name" #nameRef="ngModel" class="col-xs-10 col-sm-4" required />
+                  <span [hidden]="nameRef.valid || nameRef.pristine" class="help-inline text-warning">名称必填</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-name">大屏简介</label>
+
+                <div class="col-sm-11">
+                  <textarea id="form-description" cols="30" rows="10" [(ngModel)]="dashboard.desc" name="description" #descriptionRef="ngModel" class="col-xs-10 col-sm-10" required></textarea>
+                  <span [hidden]="descriptionRef.valid || descriptionRef.pristine" class="help-inline text-warning">简介必填</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-theme">大屏主题</label>
+
+                <div class="col-sm-11">
+                  <select name="" id="form-theme" [(ngModel)]="dashboard.option.theme" name="theme" themeRef="ngModel" required>
+                    <option *ngFor="let theme of themes" [value]="theme.id">{{theme.name}}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-resolution">分辨率(px)</label>
+
+                <div class="col-sm-11 form-inline">
+                  <input type="number" id="form-resolution-width" placeholder="宽 (1920)" [(ngModel)]="dashboard.option.resolutionWidth" name="resolutionWidth" #resolutionWidthRef="ngModel" required />
+                  <input type="number" id="form-resolution-height" placeholder="高 (1080)" [(ngModel)]="dashboard.option.resolutionHeight" name="resolutionHeight" #resolutionHeightRef="ngModel" required />
+                  <span class="help-button" placement="top" ngbPopover="拼接的单元小屏幕的分辨率大小" triggers="mouseenter:mouseleave" popoverTitle="单块屏幕的分辨率">?</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-screen">大屏数量</label>
+
+                <div class="col-sm-11 form-inline">
+                  <input type="number" id="form-landscape-num" placeholder="横向 (6)" [(ngModel)]="dashboard.option.landscapeNum" name="landscapeNum" #landscapeNumRef="ngModel" required />
+                  <input type="number" id="form-portrait-num" placeholder="纵向 (3)" [(ngModel)]="dashboard.option.portraitNum" name="portraitNum" #portraitNumRef="ngModel" required />
+                  <span class="help-button" placement="top" ngbPopover="大屏一共有多少块小屏幕组成，横向，纵向数量" triggers="mouseenter:mouseleave" popoverTitle="什么是大屏数量">?</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-standalone-screen">单屏划分</label>
+
+                <div class="col-sm-5 form-inline">
+                  <input type="number" id="form-horizontal-division" placeholder="横向划分 (2)" [(ngModel)]="dashboard.option.horizontalDivision" name="horizontalDivision" #horizontalDivisionRef="ngModel" required />
+                  <input type="number" id="form-vertical-division" placeholder="纵向划分 (2)" [(ngModel)]="dashboard.option.verticalDivision" name="verticalDivision" #verticalDivisionRef="ngModel" required />
+                  <span class="help-button" placement="top" ngbPopover="小屏幕横纵向区域划分，横纵向为等分模式" triggers="mouseenter:mouseleave" popoverTitle="单块小屏幕的划分">?</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-1 control-label no-padding-right" for="form-block-gap">块间距(px)</label>
+
+                <div class="col-sm-5 form-inline">
+                  <input type="number" id="form-block-gap" placeholder="块间距 (50)" [(ngModel)]="dashboard.option.blockGap" name="blockGap" #blockGapRef="ngModel" required />
+                  <span class="help-button" placement="top" ngbPopover="图表与图表之间的间隔" triggers="mouseenter:mouseleave" popoverTitle="块间距">?</span>
+                </div>
+              </div>
+
+              <div class="clearfix form-actions">
+                <div class="col-md-offset-1 col-md-11">
+                  <button class="btn btn-info" type="submit" [disabled]="!formRef.form.valid">
+                    <i class="ace-icon fa fa-check bigger-110"></i>
+                    保存
+                  </button> &nbsp; &nbsp; &nbsp;
+                  <button class="btn" type="button" (click)="gotoSettings(dashboard); $event.stopPropagation()">
+                    <i class="ace-icon fa fa-cog bigger-110"></i>
+                    设置大屏内容
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <app-footer></app-footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

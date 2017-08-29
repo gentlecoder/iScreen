@@ -1,0 +1,71 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "project": {
+    "name": "i-screen"
+  },
+  "apps": [
+    {
+      "root": "src",
+      "outDir": "dist",
+      "assets": [
+        "assets",
+        "favicon.ico"
+      ],
+      "index": "index.html",
+      "main": "main.ts",
+      "polyfills": "polyfills.ts",
+      "test": "test.ts",
+      "tsconfig": "tsconfig.app.json",
+      "testTsconfig": "tsconfig.spec.json",
+      "prefix": "app",
+      "styles": [
+        "../node_modules/bootstrap/dist/css/bootstrap.css",
+        "../node_modules/ace-admin-template/assets/css/ace.css",
+        "../node_modules/ace-admin-template/assets/css/ace-skins.css",
+        "../node_modules/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css",
+        "../node_modules/font-awesome/css/font-awesome.css",
+        "../node_modules/ngx-toastr/toastr.css",
+        "styles.less"
+      ],
+      "scripts": [
+        "../node_modules/jquery/dist/jquery.js",
+        "../node_modules/bootstrap/dist/js/bootstrap.js",
+        "../node_modules/ace-admin-template/assets/js/ace.js",
+        "../node_modules/ace-admin-template/assets/js/ace-extra.js",
+        "../node_modules/ace-admin-template/assets/js/ace-elements.js",
+        "../node_modules/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js",
+        "../node_modules/echarts/dist/echarts.js"
+      ],
+      "environmentSource": "environments/environment.ts",
+      "environments": {
+        "dev": "environments/environment.ts",
+        "prod": "environments/environment.prod.ts"
+      }
+    }
+  ],
+  "e2e": {
+    "protractor": {
+      "config": "./protractor.conf.js"
+    }
+  },
+  "lint": [
+    {
+      "project": "src/tsconfig.app.json"
+    },
+    {
+      "project": "src/tsconfig.spec.json"
+    },
+    {
+      "project": "e2e/tsconfig.e2e.json"
+    }
+  ],
+  "test": {
+    "karma": {
+      "config": "./karma.conf.js"
+    }
+  },
+  "defaults": {
+    "styleExt": "less",
+    "component": {}
+  }
+}

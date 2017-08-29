@@ -1,0 +1,10 @@
+<div class="container" [ngStyle]="{'width': width + 'px', 'height': height + 'px'}">
+  <div class="item" *ngFor="let block of blocks" [ngStyle]="{'width': block.width + 'px', 'height': block.height + 'px', 'top': block.top + 'px', 'left': block.left + 'px'}">
+    <div class="head">
+      标题
+    </div>
+    <div class="text">
+      <div *ngIf="block.content" echarts [options]="block.content" class="demo-chart" (chartInit)="onChartInit($event)" [ngStyle]="{'width': block.width + 'px', 'height': block.height - 50 + 'px'}"></div>
+    </div>
+  </div>
+</div>

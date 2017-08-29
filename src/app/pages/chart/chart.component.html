@@ -1,0 +1,59 @@
+<div class="wrapper no-skin">
+  <app-top></app-top>
+  <div class="main-container ace-save-state" id="main-container">
+    <div id="sidebar" class="sidebar responsive ace-save-state compact">
+      <app-menu treemodule="M0" treeitem="V1"></app-menu>
+    </div>
+    <div class="main-content">
+      <div class="main-content-inner">
+        <app-breadcrumb Showtitle="欢迎页面" Subtitle="欢迎页面副标题" Web="站点" Module="模块" Page="欢迎页面"></app-breadcrumb>
+        <div class="page-content">
+
+          <div class="page-header">
+            <h1>
+              图表管理
+              <small>
+                <i class="ace-icon fa fa-angle-double-right"></i>
+                chart list
+              </small>
+            </h1>
+          </div>
+          <div class="main-content">
+            <div class="row">
+              <div class="col-xs-12">
+                <ul class="ace-thumbnails clearfix">
+                  <li *ngFor="let chart of charts">
+                    <img width="240" height="240" alt="{{chart.name}}" src="{{devUrl}}{{chart.thumb}}">
+
+                    <div class="tags">
+                      <span class="label-holder">
+                        <span class="label label-info">{{chart.name}}</span>
+                      </span>
+                      <span class="label-holder">
+                        <span class="label label-danger">{{chart.type}}</span>
+                      </span>
+                      <span class="label-holder">
+                        <span class="label label-success">{{chart.category}}</span>
+                      </span>
+                    </div>
+
+                    <div class="tools tools-bottom">
+                      <a (click)="gotoDetail(chart); $event.stopPropagation()">
+                        <i class="ace-icon fa fa-pencil"></i>
+                      </a>
+                      <a (click)="delete(chart); $event.stopPropagation()">
+                        <i class="ace-icon fa fa-times red"></i>
+                      </a>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <app-footer></app-footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

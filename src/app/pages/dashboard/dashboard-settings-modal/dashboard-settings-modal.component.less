@@ -1,0 +1,68 @@
+.demo-chart {
+  width: 960px;
+  height: 300px;
+}
+
+.row {
+  padding: 5px 0;
+}
+
+.theme-plan-group {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: auto;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  padding: 5px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.theme-plan-color {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 10px;
+  margin-left: 2px;
+  margin-right: 2px;
+  display: inline-block;
+  border-radius: 3px;
+}
+
+ul {
+  margin: 0px;
+  padding: 0px;
+}
+
+li {
+  padding: 0px;
+  margin-right: 10px;
+  list-style: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.selected {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.selected .checked {
+  width: 12px;
+  height: 12px;
+  background-image: url(/assets/images/echarts/checked.png);
+  background-repeat: no-repeat;
+  background-size: 12px;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.settings{
+  height: 300px;
+  overflow-y: auto;
+}

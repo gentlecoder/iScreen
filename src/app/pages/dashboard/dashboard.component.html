@@ -1,0 +1,82 @@
+<div class="wrapper no-skin">
+  <app-top></app-top>
+  <div class="main-container ace-save-state" id="main-container">
+    <div id="sidebar" class="sidebar responsive ace-save-state compact">
+      <app-menu treemodule="M0" treeitem="V1"></app-menu>
+    </div>
+    <div class="main-content">
+      <div class="main-content-inner">
+        <app-breadcrumb Showtitle="欢迎页面" Subtitle="欢迎页面副标题" Web="站点" Module="模块" Page="欢迎页面"></app-breadcrumb>
+        <div class="page-content">
+
+          <div class="page-header">
+            <h1>
+              大屏列表
+              <small>
+                <i class="ace-icon fa fa-angle-double-right"></i>
+                dashboard list
+              </small>
+            </h1>
+          </div>
+          <div class="main-content">
+            <div class="row">
+              <div class="col-xs-12">
+                <table id="simple-table" class="table  table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>大屏名称</th>
+                      <th class="detail-col">大屏简介</th>
+                      <th>大屏组成</th>
+                      <th>单屏分辨率</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let dashboard of dashboards">
+                      <td>
+                        {{dashboard.name}}
+                      </td>
+                      <td>
+                        {{dashboard.desc}}
+                      </td>
+                      <td>
+                        {{dashboard.option.landscapeNum}} x {{dashboard.option.portraitNum}}
+                      </td>
+                      <td>
+                        {{dashboard.option.resolutionWidth}} x {{dashboard.option.resolutionHeight}}
+                      </td>
+                      <td>
+                        <div class="hidden-sm hidden-xs btn-group">
+                          <button class="btn btn-xs btn-info" (click)="gotoDetail(dashboard); $event.stopPropagation()">
+                            <i class="ace-icon fa fa-pencil bigger-120"></i>
+                            编辑
+                          </button>
+                          <button class="btn btn-xs btn-danger" (click)="delete(dashboard); $event.stopPropagation()">
+                            <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                            删除
+                          </button>
+                          <button class="btn btn-xs btn-success" (click)="gotoSettings(dashboard); $event.stopPropagation()">
+                            <i class="ace-icon fa fa-cog bigger-120"></i>
+                            设置大屏内容
+                          </button>
+                          <button class="btn btn-xs btn-purple" (click)="gotoView(dashboard); $event.stopPropagation()">
+                            <i class="ace-icon fa fa-safari bigger-120"></i>
+                            预览
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            
+          </div>
+
+          <app-footer></app-footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

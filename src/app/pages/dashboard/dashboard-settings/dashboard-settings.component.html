@@ -1,0 +1,115 @@
+<div class="wrapper no-skin">
+  <app-top></app-top>
+  <div class="main-container ace-save-state" id="main-container">
+    <div id="sidebar" class="sidebar responsive ace-save-state compact">
+      <app-menu treemodule="M0" treeitem="V1"></app-menu>
+    </div>
+    <div class="main-content" *ngIf="dashboard">
+      <div class="main-content-inner">
+        <app-breadcrumb Showtitle="欢迎页面" Subtitle="欢迎页面副标题" Web="站点" Module="模块" Page="欢迎页面"></app-breadcrumb>
+        <div class="page-content" *ngIf="dashboard">
+          <div class="page-header">
+            <h1>
+              {{dashboard.name}} 设置
+              <small>
+                <i class="ace-icon fa fa-angle-double-right"></i>
+                dashboard settings
+              </small>
+            </h1>
+          </div>
+          <div class="main-content">
+            <button class="btn btn-white btn-info btn-bold" (click)="addWidget(dashboard.content)">
+              <i class="ace-icon fa fa-plus bigger-100"></i>
+              添加
+            </button>
+            <button class="btn btn-white btn-success btn-bold" (click)="saveWidgets(dashboard); $event.stopPropagation()">
+              <i class="ace-icon fa fa-cloud-upload bigger-100"></i>
+              保存
+            </button>
+            <button class="btn btn-white btn-inverse btn-bold" (click)="gotoDetail(dashboard); $event.stopPropagation()">
+              <i class="ace-icon fa fa-edit bigger-100"></i>
+              编辑大屏参数
+            </button>
+            <button class="btn btn-white btn-warning btn-bold" (click)="gotoView(dashboard); $event.stopPropagation()">
+              <i class="ace-icon fa fa-safari bigger-100"></i>
+              预览大屏
+            </button>
+            
+            <hr />
+
+            <gridster [options]="gridsterOptions" [draggableOptions]="gridsterDraggableOptions" (optionsChange)="optionsChange($event)" #gridster style="min-height: 500px;">
+
+              <gridster-item class="widget" *ngFor="let widget of dashboard.content; let index = index" #itemComp [options]="itemOptions" [dragAndDrop]="widget.dragAndDrop" [resizable]="widget.resizable" [(x)]="widget.x" [(y)]="widget.y" [(w)]="widget.w" [(h)]="widget.h" (change)="itemChange($event, gridster)">
+
+                <div class="widget-box transparent">
+                  <div class="widget-header">
+                    <h4 class="widget-title">
+                      {{ widget.title }}
+                    </h4>
+                    <div class="widget-toolbar">
+                      <a data-action="settings" (click)="openModal(widget)">
+                        <i class="ace-icon fa fa-cog"></i>
+                      </a>
+                      <a class="widget-move orange">
+                        <i class="ace-icon fa fa-arrows"></i>
+                      </a>
+                      <a (click)="removeWidget($event, dashboard.content, index, gridster1)" data-action="close">
+                        <i class="ace-icon fa fa-times"></i>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="widget-body">
+                    <div class="widget-main">
+                      <p>
+                        Position: {{itemComp?.item?.x}} x {{itemComp?.item?.y}}<br> Size: {{widget.w}} x {{widget.h}}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #content let-c="close" let-d="dismiss">
+                  <div class="modal-header">
+                    <h4 class="modal-title">{{widget.title}}</h4>
+                    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div echarts [options]="chartOption" class="demo-chart"></div>
+                    <hr />
+                    <form class="form-horizontal" role="form" *ngIf="widget" #formRef="ngForm" (ngSubmit)="onSubmit(formRef.value)">
+                      <h5>基本配置</h5>
+                      <div class="form-group">
+                        <label class="col-sm-1 control-label no-padding-right" for="form-name">名称</label>
+
+                        <div class="col-sm-11">
+                          <input type="text" id="form-name" placeholder="图表名称" [(ngModel)]="widget.title" name="name" #nameRef="ngModel" class="col-xs-10 col-sm-4" required />
+                          <span [hidden]="nameRef.valid || nameRef.pristine" class="help-inline text-warning">名称必填</span>
+                        </div>
+                      </div>
+                      <hr />
+                      <h5>图表配置</h5>
+                      <div class="form-group">
+                        <label class="col-sm-1 control-label no-padding-right"></label>
+
+                        <div class="col-sm-11">
+                          <button class="btn btn-info btn-xs" type="submit" [disabled]="!formRef.form.valid">
+                            <i class="ace-icon fa fa-check bigger-110"></i>
+                            保存
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="c('Close click')">Close</button>
+                  </div>
+                </ng-template>
+              </gridster-item>
+            </gridster>
+          </div>
+          <app-footer></app-footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

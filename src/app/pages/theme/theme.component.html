@@ -1,0 +1,64 @@
+<div class="wrapper no-skin">
+  <app-top></app-top>
+  <div class="main-container ace-save-state" id="main-container">
+    <div id="sidebar" class="sidebar responsive ace-save-state compact">
+      <app-menu treemodule="M0" treeitem="V1"></app-menu>
+    </div>
+    <div class="main-content">
+      <div class="main-content-inner">
+        <app-breadcrumb Showtitle="欢迎页面" Subtitle="欢迎页面副标题" Web="站点" Module="模块" Page="欢迎页面"></app-breadcrumb>
+        <div class="page-content">
+
+          <div class="page-header">
+            <h1>
+              主题管理
+              <small>
+                <i class="ace-icon fa fa-angle-double-right"></i>
+                theme management
+              </small>
+            </h1>
+          </div>
+          
+          <div class="main-content">
+            <div class="row">
+              <div class="col-xs-12">
+                <table id="simple-table" class="table  table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th class="detail-col" width="120">主题图片</th>
+                      <th>主题名</th>
+                      <th width="150">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let theme of themes">
+                      <td>
+                        <img src="{{devUrl}}resource/theme/{{theme.id}}/screenshot.png" style="width: 100px;" />
+                      </td>
+                      <td>
+                        {{theme.name}}
+                      </td>                      
+                      <td>
+                        <div class="hidden-sm hidden-xs btn-group">
+                          <button class="btn btn-xs btn-info">
+                            <i class="ace-icon fa fa-pencil bigger-120"></i>
+                            编辑
+                          </button>
+                          <button class="btn btn-xs btn-danger" (click)="delete(theme); $event.stopPropagation()">
+                            <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <app-footer></app-footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

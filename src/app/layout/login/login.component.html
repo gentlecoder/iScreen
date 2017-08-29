@@ -1,0 +1,77 @@
+<div class="login-layout light-login login">
+  <div class="main-container">
+    <div class="main-content">
+      <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+          <div class="login-container">
+            <div class="center">
+              <h1>
+                <i class="ace-icon fa fa-pie-chart green"></i>
+                <span class="red">iScreen</span>
+                <span class="white" id="id-text2">可视化大屏</span>
+              </h1>
+              <h4 class="light-blue" id="id-company-text">ZTE &copy; 2017</h4>
+            </div>
+
+            <div class="space-6"></div>
+
+            <div class="position-relative">
+              <div id="login-box" class="login-box visible widget-box no-border">
+                <div class="widget-body">
+                  <div class="widget-main">
+                    <h4 class="header blue lighter bigger">
+                      <i class="ace-icon fa fa-coffee green"></i>
+                      请输入登录信息
+                    </h4>
+
+                    <div class="space-6"></div>
+
+                    <form #formRef="ngForm" (ngSubmit)="onSubmit(formRef.value)">
+                      <fieldset>
+                        <label class="block clearfix">
+														<span class="block input-icon input-icon-right">
+															<input type="text" class="form-control" name="username" [(ngModel)]="username" #usernameRef="ngModel" placeholder="用户名" required />
+															<i class="ace-icon fa fa-user"></i>
+														</span>
+                        </label>
+
+                        <label class="block clearfix">
+														<span class="block input-icon input-icon-right">
+															<input type="password" class="form-control" name="password" [(ngModel)]="password" #passwordRef="ngModel" placeholder="密码" required />
+															<i class="ace-icon fa fa-lock"></i>
+														</span>
+                        </label>
+
+                        <div class="space"></div>
+
+                        <div class="clearfix">
+                          <button type="submit" class="width-35 pull-right btn btn-sm btn-primary" [disabled]="!formRef.form.valid">
+                            <i class="ace-icon fa fa-key"></i>
+                            <span class="bigger-110">登录</span>
+                          </button>
+                        </div>
+                        用户名: super
+                        密码： super
+
+                        <div class="space-4"></div>
+                      </fieldset>
+                    </form>
+                  </div>
+
+                  <div class="toolbar clearfix">
+                    <div>
+                      <a href="#" data-target="#forgot-box" class="forgot-password-link">
+                        <i class="ace-icon fa fa-arrow-left"></i>
+                        忘记密码
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

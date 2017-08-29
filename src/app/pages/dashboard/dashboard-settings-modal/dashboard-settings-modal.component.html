@@ -1,0 +1,1201 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{widget.title}}</h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="alert alert-block alert-success">点击 <strong>保存</strong> 按钮预览设置效果</div>
+  <div echarts [options]="widget.content" class="demo-chart" (chartInit)="onChartInit($event)"></div>
+  <hr/>
+  <div class="row settings">
+    <div class="col-sm-12">
+      <form class="form-horizontal" role="form" *ngIf="widget" #formRef="ngForm" (ngSubmit)="onSubmit(formRef.value)">
+        <h5>标题及数据配置</h5>
+        <div class="form-group">
+          <label class="col-sm-2 control-label no-padding-right" for="form-name">图表名称</label>
+
+          <div class="col-sm-10">
+            <input type="text" id="form-name" placeholder="图表名称" [(ngModel)]="widget.title" name="name"
+                   #nameRef="ngModel" class="col-xs-10 col-sm-4"
+                   required/>
+            <span [hidden]="nameRef.valid || nameRef.pristine" class="help-inline text-warning">名称必填</span>
+          </div>
+        </div>
+        <div class="form-group" *ngIf="widget.chart.id">
+          <label class="col-sm-2 control-label no-padding-right" for="form-data">数据
+            <span class="help-button" placement="top" ngbPopover="数据分为动态数据(通过接口获取)和静态数据(填写form获取)，动态数据必须按照固定的格式书写。"
+                  triggers="mouseenter:mouseleave" popoverTitle="数据">?</span>
+          </label>
+
+          <div class="col-sm-10">
+            <div class="row" *ngIf="widget.content.xAxis.data">
+              <div class="col-sm-2">X轴</div>
+              <div class="col-sm-10">
+                <span *ngFor="let item of widget.content.xAxis.data; let idx = index">
+                  <input type="text" class="col-sm-2" [(ngModel)]="widget.content.xAxis.data[idx]"
+                         value="{{widget.content.xAxis.data[idx]}}" name="xAxisData[{{idx}}]"/>
+                </span>
+              </div>
+            </div>
+            <div class="row" *ngIf="widget.content.yAxis.data">
+              <div class="col-sm-2">Y轴</div>
+              <div class="col-sm-10">
+                <span *ngFor="let item of widget.content.yAxis.data; let idx = index">
+                  <input type="text" class="col-sm-2" [(ngModel)]="widget.content.yAxis.data[idx]"
+                         value="{{widget.content.yAxis.data[idx]}}" name="yAxisData[{{idx}}]"/>
+                </span>
+              </div>
+            </div>
+            <div class="row" *ngFor="let item of widget.content.series; let idx = index">
+              <div class="col-sm-2">
+                <input type="text" [(ngModel)]="item.name" name="seriesName[{{idx}}]" class="col-sm-12"
+                       value="{{item.name}}"/>
+              </div>
+              <div class="col-sm-10">
+                <span *ngFor="let d of item.data; let didx = index">
+                  <input class="col-sm-2" [(ngModel)]="item.data[didx]" type="text"
+                         name="seriesDataItem{{item.name}}[{{didx}}]" value="{{item.data[didx]}}"/>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr/>
+        <h5>图表配置</h5>
+        <div class="form-group">
+          <label class="col-sm-2 control-label no-padding-right">基本配置项</label>
+          <div class="col-sm-10" id="echarts-setting">
+            <ngb-tabset>
+              <ngb-tab title="图表类型及样式选择">
+                <ng-template ngbTabContent>
+                  <div class="form-group type">
+                    <label class="col-sm-2 control-label no-padding-right" for="form-title">图表基类
+                      <span class="help-button" placement="top" ngbPopover="选择图表基类（D3.js，echarts，highcharts等）"
+                            triggers="mouseenter:mouseleave" popoverTitle="图表基类">?</span>
+                    </label>
+                    <div class="col-sm-9 inline">
+                      <div class="radio" *ngFor="let t of types">
+                        <label>
+                          <input [(ngModel)]="widget.chart.type" name="type" type="radio" class="ace" [value]="t.id"
+                                 required/>
+                          <span class="lbl"> <img src="assets/images/charts/{{t.id}}.svg" alt="{{t.name}}"/></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group type">
+                    <label class="col-sm-2 control-label no-padding-right" for="form-title">图表类型
+                      <span class="help-button" placement="top" ngbPopover="选择图表类型（折线图、柱状图、饼图等）"
+                            triggers="mouseenter:mouseleave" popoverTitle="图表类型">?</span>
+                    </label>
+                    <div class="col-sm-9 inline">
+                      <div class="radio" *ngFor="let c of categories">
+                        <label>
+                          <input [(ngModel)]="widget.chart.category" name="category" type="radio" class="ace"
+                                 [value]="c.id" required/>
+                          <span class="lbl"> <img src="assets/images/charts/{{c.id}}.png"/> {{c.name}}</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group category">
+                    <label class="col-sm-2 control-label no-padding-right" for="form-title">图表样式
+                      <span class="help-button" placement="top" ngbPopover="设置图表具体样式" triggers="mouseenter:mouseleave"
+                            popoverTitle="图表样式">?</span>
+                    </label>
+                    <div class="col-sm-9 inline">
+                      <ul class="ace-thumbnails clearfix">
+                        <li *ngFor="let chart of charts" (click)="chartChoose(chart)">
+                          <img width="100" height="100" alt="{{chart.name}}" src="{{devUrl}}{{chart.thumb}}"
+                               *ngIf="widget.chart.type == chart.type&&widget.chart.category == chart.category">
+
+                          <div class="tags">
+                            <span class="label-holder">
+                              <span class="label label-success" *ngIf="widget.chart.id == chart.id">
+                                <i class="fa fa-check-circle-o" aria-hidden="true"></i>
+                              </span>
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="标题组件">
+                <ng-template ngbTabContent>
+                  <div class="form-group" *ngIf="widget.content.title">
+                    <label class="col-sm-2 control-label no-padding-right" for="form-title">标题组件
+                      <span class="help-button" placement="top" ngbPopover="包含主标题和副标题" triggers="mouseenter:mouseleave"
+                            popoverTitle="标题组件">?</span>
+                    </label>
+                    <div class="col-sm-5">
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <h6>主标题文本</h6>
+                        </div>
+                        <div class="col-sm-5">
+                          <div class="radio">
+                            <label>
+                              <input name="form-content-title-show" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.title.show"
+                                     ng-checked="widget.content.title.show == true"/>
+                              <span class="lbl"> 显示</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-sm-7" *ngIf="widget.content.title.show">
+                          <input type="text" id="form-title" placeholder="主标题文本" [(ngModel)]="widget.content.title.text"
+                                 name="title" #titleRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.textStyle">
+                        <div class="col-sm-5">
+                          <h6>主标题文本颜色</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-title-color" placeholder="字体颜色"
+                                 [(ngModel)]="widget.content.title.textStyle.color"
+                                 (blur)="changeColor('title.textStyle.color','form-title-color')"
+                                 name="titleColor" #titleColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.textStyle">
+                        <div class="col-sm-5">
+                          <h6>主标题文本大小</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-title-fontSize" placeholder="字体大小"
+                                 [(ngModel)]="widget.content.title.textStyle.fontSize" name="titleFontSize"
+                                 #titleFontSizeRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.textStyle">
+                        <div class="col-sm-5">
+                          <h6>主标题文本粗细</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-title-fontWeight" placeholder="字体粗细"
+                                 [(ngModel)]="widget.content.title.textStyle.fontWeight"
+                                 name="titleFontWeight" #titleFontWeightRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.textAlign">
+                        <div class="col-sm-5">
+                          <h6>主标题水平对齐</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <select name="titleAlign" id="form-title-align" [(ngModel)]="widget.content.title.textAlign">
+                            <option value="left"><i class="ace-icon fa fa-align-left"></i> 居左对齐</option>
+                            <option value="center"><i class="ace-icon fa fa-align-center"></i> 居中对齐</option>
+                            <option value="right"><i class="ace-icon fa fa-align-right"></i> 居右对齐</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show">
+                        <div class="col-sm-5">
+                          <h6>主标题位置偏移</h6>
+                        </div>
+                        <div class="col-sm-3">
+                          <div>上</div>
+                          <input type="text" id="form-title-top" placeholder="上" [(ngModel)]="widget.content.title.top"
+                                 name="titleTop" #titleTopRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-3">
+                          <div>左</div>
+                          <input type="text" id="form-title-left" placeholder="左"
+                                 [(ngModel)]="widget.content.title.left" name="titleLeft" #titleLeftRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-5">
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <h6>副标题文本</h6>
+                        </div>
+                        <div class="col-sm-5">
+                          <div class="radio">
+                            <label>
+                              <input name="form-content-title-show" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.title.show"
+                                     ng-checked="widget.content.title.show == true"/>
+                              <span class="lbl"> 显示</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-sm-7" *ngIf="widget.content.title.show">
+                          <input type="text" id="form-subtitle" placeholder="副标题文本"
+                                 [(ngModel)]="widget.content.title.subtext" name="subTitle" #subTitleRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.subtextStyle">
+                        <div class="col-sm-5">
+                          <h6>副标题文本颜色</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-subtitle-color" placeholder="字体颜色"
+                                 [(ngModel)]="widget.content.title.subtextStyle.color"
+                                 (blur)="changeColor('title.subtextStyle.color','form-subtitle-color')"
+                                 name="subTitleColor" #subTitleColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.subtextStyle">
+                        <div class="col-sm-5">
+                          <h6>副标题文本大小</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-subTitle-fontSize" placeholder="字体大小"
+                                 [(ngModel)]="widget.content.title.subtextStyle.fontSize"
+                                 name="subTitleFontSize" #subTitleFontSizeRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.title.show&&widget.content.title.subtextStyle">
+                        <div class="col-sm-5">
+                          <h6>副标题文本粗细</h6>
+                        </div>
+                        <div class="col-sm-7">
+                          <input type="text" id="form-subTitle-fontWeight" placeholder="字体粗细"
+                                 [(ngModel)]="widget.content.title.subtextStyle.fontWeight"
+                                 name="subTitleFontWeight" #subTitleFontWeightRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="其他组件">
+                <ng-template ngbTabContent>
+                  <div class="form-group" *ngIf="widget.content.legend">
+                    <label class="col-sm-2 control-label no-padding-right">图例组件
+                      <span class="help-button" placement="top"
+                            ngbPopover="图例组件展现了不同系列的标记(symbol)，颜色和名字。可以通过点击图例控制哪些系列不显示。"
+                            triggers="mouseenter:mouseleave" popoverTitle="图例组件">?</span>
+                    </label>
+                    <div class="col-sm-10">
+                      <div class="radio">
+                        <label>
+                          <input name="form-content-legend-show" type="checkbox" class="ace"
+                                 [(ngModel)]="widget.content.legend.show"/>
+                          <span class="lbl"> 显示</span>
+                        </label>
+                      </div>
+                      <div class="row" *ngIf="widget.content.legend.show&&widget.content.legend.orient">
+                        <div class="col-sm-2">
+                          <h6>图例布局朝向</h6>
+                        </div>
+                        <div class="col-sm-10">
+                          <select name="legendOrient" id="form-legend-orient"
+                                  [(ngModel)]="widget.content.legend.orient">
+                            <option value="horizontal"><i class="ace-icon fa fa-align-left"></i> 水平布局</option>
+                            <option value="vertical"><i class="ace-icon fa fa-align-center"></i> 垂直布局</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="widget.content.legend.show&&widget.content.legend.top&&widget.content.legend.left">
+                        <div class="col-sm-2">
+                          <h6>图例位置偏移</h6>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>上</div>
+                          <input type="text" id="form-legend-top" placeholder="上偏移"
+                                 [(ngModel)]="widget.content.legend.top" name="legendTop" #legendTopRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>左</div>
+                          <input type="text" id="form-legend-left" placeholder="左偏移"
+                                 [(ngModel)]="widget.content.legend.left" name="legendLeft" #legendLeftRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="widget.content.grid">
+                    <label class="col-sm-2 control-label no-padding-right">绘图网格
+                      <span class="help-button" placement="top"
+                            ngbPopover="直角坐标系内绘图网格，单个 grid 内最多可以放置上下两个 X 轴，左右两个 Y 轴。可以在网格上绘制折线图，柱状图，散点图（气泡图）。"
+                            triggers="mouseenter:mouseleave" popoverTitle="绘图网格">?</span>
+                    </label>
+                    <div class="col-sm-10">
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="radio">
+                            <label>
+                              <input name="form-content-grid-show" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.grid.show"/>
+                              <span class="lbl"> 显示直角坐标系网格</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="radio">
+                            <label>
+                              <input name="form-content-grid-containLabel" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.grid.containLabel"/>
+                              <span class="lbl"> 绘图网格包含坐标轴的刻度标签</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-2">偏移</div>
+                        <div class="col-sm-2">
+                          <div>上</div>
+                          <input type="text" id="form-grid-top" placeholder="上偏移" [(ngModel)]="widget.content.grid.top"
+                                 name="gridTop" #gridTopRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>右</div>
+                          <input type="text" id="form-grid-right" placeholder="右偏移"
+                                 [(ngModel)]="widget.content.grid.right" name="gridRight" #gridRightRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>下</div>
+                          <input type="text" id="form-grid-bottom" placeholder="下偏移"
+                                 [(ngModel)]="widget.content.grid.bottom" name="gridBottom" #gridBottomRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>左</div>
+                          <input type="text" id="form-grid-left" placeholder="左偏移"
+                                 [(ngModel)]="widget.content.grid.left" name="gridLeft" #gridLeftRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="widget.content.tooltip">
+                    <label class="col-sm-2 control-label no-padding-right">提示框组件
+                      <span class="help-button" placement="top" ngbPopover="提示框组件可以设置在多种地方，此处为全局设置。"
+                            triggers="mouseenter:mouseleave" popoverTitle="提示框组件">?</span>
+                    </label>
+                    <div class="col-sm-10">
+                      <div class="radio">
+                        <label>
+                          <input name="form-content-tooltip-show" type="checkbox" class="ace"
+                                 [(ngModel)]="widget.content.tooltip.show"/>
+                          <span class="lbl"> 显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="widget.content.tooltip.show&&widget.content.tooltip.axisPointer&&widget.content.tooltip.axisPointer.type">
+                        <div class="col-sm-2">
+                          <h6>坐标轴指示器</h6>
+                        </div>
+                        <div class="col-sm-10">
+                          <select name="tooltipAxisPointer" id="form-tooltip-axisPointer"
+                                  [(ngModel)]="widget.content.tooltip.axisPointer.type">
+                            <option value="line"><i class="ace-icon fa fa-align-left"></i> 直线指示器</option>
+                            <option value="shadow"><i class="ace-icon fa fa-align-center"></i> 阴影指示器</option>
+                          </select>
+                        </div>
+                        <!--<div class="col-sm-10">-->
+                        <!--<input type="text" id="form-tooltip-axisPointer" placeholder="坐标轴指示器配置项"-->
+                        <!--[(ngModel)]="widget.content.tooltip.axisPointer.type"-->
+                        <!--name="tooltipAxisPointer" #tooltipAxisPointerRef="ngModel"-->
+                        <!--class="col-xs-10 col-sm-4"/>-->
+                        <!--</div>-->
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group" *ngIf="widget.content.toolbox">
+                    <label class="col-sm-2 control-label no-padding-right">工具栏
+                      <span class="help-button" placement="top" ngbPopover="内置有导出图片，数据视图，动态类型切换，数据区域缩放，重置五个工具。"
+                            triggers="mouseenter:mouseleave" popoverTitle="工具栏">?</span>
+                    </label>
+                    <div class="col-sm-10">
+                      <div class="radio">
+                        <label>
+                          <input name="form-content-toolbox-show" type="checkbox" class="ace"
+                                 [(ngModel)]="widget.content.toolbox.show"/>
+                          <span class="lbl"> 显示</span>
+                        </label>
+                      </div>
+                      <div class="row" *ngIf="widget.content.toolbox.show&&widget.content.toolbox.orient">
+                        <div class="col-sm-2">
+                          <h6>工具栏布局朝向</h6>
+                        </div>
+                        <div class="col-sm-10">
+                          <select name="toolboxOrient" id="form-toolbox-orient"
+                                  [(ngModel)]="widget.content.toolbox.orient">
+                            <option value="horizontal"><i class="ace-icon fa fa-align-left"></i> 水平布局</option>
+                            <option value="vertical"><i class="ace-icon fa fa-align-center"></i> 垂直布局</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.toolbox.show&&widget.content.toolbox.feature">
+                        <div class="col-sm-2">
+                          <h6>工具配置项</h6>
+                        </div>
+                        <div class="col-sm-10">
+                          <div class="radio" class="col-sm-3 no-padding"
+                               *ngIf="widget.content.toolbox.feature.saveAsImage">
+                            <label>
+                              <input name="form-content-toolbox-feature-saveAsImage" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.toolbox.feature.saveAsImage"/>
+                              <span class="lbl"> 保存为图片</span>
+                            </label>
+                          </div>
+                          <div class="radio" class="col-sm-3 no-padding"
+                               *ngIf="widget.content.toolbox.feature.dataView">
+                            <label>
+                              <input name="form-content-toolbox-feature-dataView" type="checkbox" class="ace"
+                                     [(ngModel)]="widget.content.toolbox.feature.dataView"/>
+                              <span class="lbl"> 数据视图工具</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="widget.content.toolbox.show">
+                        <div class="col-sm-2">
+                          <h6>工具栏位置偏移</h6>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>上</div>
+                          <input type="text" id="form-toolbox-top" placeholder="上"
+                                 [(ngModel)]="widget.content.toolbox.top" name="toolboxTop" #toolboxTopRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>左</div>
+                          <input type="text" id="form-toolbox-left" placeholder="左"
+                                 [(ngModel)]="widget.content.toolbox.left" name="toolboxLeft" #toolboxLeftRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="X轴" *ngIf="widget.content.xAxis">
+                <ng-template ngbTabContent>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label no-padding-right">X轴设置
+                      <span class="help-button" placement="top"
+                            ngbPopover="直角坐标系 grid 中的 x 轴，一般情况下单个 grid 组件最多只能放上下两个 x 轴，多于两个 x 轴需要通过配置 offset 属性防止同个位置多个 x 轴的重叠。"
+                            triggers="mouseenter:mouseleave" popoverTitle="X轴设置">?</span>
+                    </label>
+                    <div class="col-sm-10" *ngFor="let xAxisSet of widget.content.xAxis; let i=index">
+                      <div class="radio" *ngIf="xAxisSet">
+                        <label>
+                          <input name="form-content-xAxis-show" type="checkbox" class="ace"
+                                 [(ngModel)]="xAxisSet.show"/>
+                          <span class="lbl"> 显示</span>
+                        </label>
+                      </div>
+                      <div class="radio" *ngIf="xAxisSet.show&&xAxisSet.axisLine">
+                        <label>
+                          <input name="form-content-xAxis-axisLine-show" type="checkbox" class="ace"
+                                 [(ngModel)]="xAxisSet.axisLine.show"/>
+                          <span class="lbl"> 坐标轴轴线显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLine&&xAxisSet.axisLine.show&&xAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisLine-color" placeholder="坐标轴轴线颜色"
+                                 [(ngModel)]="xAxisSet.axisLine.lineStyle.color"
+                                 (blur)="changeColor('xAxis.'+i+'.axisLine.lineStyle.color','form-xAxisLine-color')"
+                                 name="xAxisLineColor" #xAxisLineColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLine&&xAxisSet.axisLine.show&&xAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="xAxisLineType" id="form-xAxis-lineStyle-type"
+                                  [(ngModel)]="xAxisSet.axisLine.lineStyle.type">
+                            <option value="solid"><i class="ace-icon fa fa-align-left"></i> 实线型</option>
+                            <option value="dashed"><i class="ace-icon fa fa-align-center"></i> 虚线型</option>
+                            <option value="dotted"><i class="ace-icon fa fa-align-right"></i> 散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLine&&xAxisSet.axisLine.show&&xAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线阴影的模糊大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxis-lineStyle-shadowBlur" placeholder="坐标轴轴线阴影的模糊大小"
+                                 [(ngModel)]="xAxisSet.axisLine.lineStyle.shadowBlur"
+                                 name="xAxisSetAxisLineShadowBlur" #xAxisSetAxisLineShadowBlurRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLine&&xAxisSet.axisLine.show&&xAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线阴影的阴影颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxis-lineStyle-shadow-color" placeholder="坐标轴轴线阴影的阴影颜色"
+                                 [(ngModel)]="xAxisSet.axisLine.lineStyle.shadowColor"
+                                 (blur)="changeColor('xAxis.'+i+'.axisLine.lineStyle.shadowColor','form-xAxis-lineStyle-shadow-color')"
+                                 name="xAxisSetAxisLineShadowColor" #xAxisSetAxisLineShadowColorRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLine&&xAxisSet.axisLine.show&&xAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线透明度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxis-lineStyle-opacity" placeholder="坐标轴轴线透明度"
+                                 [(ngModel)]="xAxisSet.axisLine.lineStyle.opacity"
+                                 name="xAxisSetAxisLineeOpacity" #xAxisSetAxisLineOpacityRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="xAxisSet.show&&xAxisSet.axisTick">
+                        <label>
+                          <input name="form-content-xAxis-axisTick-show" type="checkbox" class="ace"
+                                 [(ngModel)]="xAxisSet.axisTick.show"/>
+                          <span class="lbl"> 坐标轴刻度显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisTick&&xAxisSet.axisTick.show&&xAxisSet.axisTick.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisTick-color" placeholder="坐标轴刻度颜色"
+                                 [(ngModel)]="xAxisSet.axisTick.lineStyle.color"
+                                 (blur)="changeColor('xAxis.'+i+'.axisTick.lineStyle.color','form-xAxisTick-color')"
+                                 name="xAxisTickColor" #xAxisTickColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisTick&&xAxisSet.axisTick.show&&xAxisSet.axisTick.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="xAxisTickType" id="form-xAxisTick-lineStyle-type"
+                                  [(ngModel)]="xAxisSet.axisTick.lineStyle.type">
+                            <option value="solid"><i class="ace-icon fa fa-align-left"></i> 实线型</option>
+                            <option value="dashed"><i class="ace-icon fa fa-align-center"></i> 虚线型</option>
+                            <option value="dotted"><i class="ace-icon fa fa-align-right"></i> 散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="xAxisSet.show&&xAxisSet.axisLabel">
+                        <label>
+                          <input name="form-content-xAxis-axisLabel-show" type="checkbox" class="ace"
+                                 [(ngModel)]="xAxisSet.axisLabel.show"/>
+                          <span class="lbl"> 坐标轴刻度标签显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLabel&&xAxisSet.axisLabel.show&&xAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisLabel-color" placeholder="坐标轴刻度标签字体颜色"
+                                 [(ngModel)]="xAxisSet.axisLabel.textStyle.color"
+                                 (blur)="changeColor('xAxis.'+i+'.axisLabel.textStyle.color','form-xAxisLabel-color')"
+                                 name="xAxisLabelColor"
+                                 #xAxisLabelColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLabel&&xAxisSet.axisLabel.show&&xAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisLabel-fontSize" placeholder="坐标轴刻度标签字体大小"
+                                 [(ngModel)]="xAxisSet.axisLabel.textStyle.fontSize"
+                                 name="xAxisLabelFontSize" #xAxisLabelFontSizeRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.axisLabel&&xAxisSet.axisLabel.show&&xAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体粗细</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisLabel-fontWeight" placeholder="坐标轴刻度标签字体粗细"
+                                 [(ngModel)]="xAxisSet.axisLabel.textStyle.fontWeight"
+                                 name="xAxisLabelFontWeight" #xAxisLabelFontWeightRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="xAxisSet.show&&xAxisSet.splitLine">
+                        <label>
+                          <input name="form-content-xAxis-splitLine-show" type="checkbox" class="ace"
+                                 [(ngModel)]="xAxisSet.splitLine.show"/>
+                          <span class="lbl"> 坐标轴分隔线显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.splitLine&&xAxisSet.splitLine.show&&xAxisSet.splitLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴分隔线颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-xAxisSplitLine-color" placeholder="坐标轴分隔线颜色"
+                                 [(ngModel)]="xAxisSet.splitLine.lineStyle.color"
+                                 (blur)="changeColor('xAxis.'+i+'.splitLine.lineStyle.color','form-xAxisSplitLine-color')"
+                                 name="xAxisSplitLineColor"
+                                 #xAxisSplitLineColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="xAxisSet.show&&xAxisSet.splitLine&&xAxisSet.splitLine.show&&xAxisSet.splitLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴分隔线类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="xAxisSplitLineType" id="foSrm-xAxis-splitLine-type"
+                                  [(ngModel)]="xAxisSet.splitLine.lineStyle.type">
+                            <option value="solid"><i class="ace-icon fa fa-align-left"></i> 实线型</option>
+                            <option value="dashed"><i class="ace-icon fa fa-align-center"></i> 虚线型</option>
+                            <option value="dotted"><i class="ace-icon fa fa-align-right"></i> 散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Y轴" *ngIf="widget.content.yAxis">
+                <ng-template ngbTabContent>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label no-padding-right">Y轴设置
+                      <span class="help-button" placement="top"
+                            ngbPopover="直角坐标系 grid 中的 y 轴，一般情况下单个 grid 组件最多只能放左右两个 y 轴，多于两个 y 轴需要通过配置 offset 属性防止同个位置多个 Y 轴的重叠。"
+                            triggers="mouseenter:mouseleave" popoverTitle="Y轴设置">?</span>
+                    </label>
+                    <div class="col-sm-10" *ngFor="let yAxisSet of widget.content.yAxis">
+                      <div class="radio" *ngIf="yAxisSet">
+                        <label>
+                          <input name="form-content-yAxis-show" type="checkbox" class="ace"
+                                 [(ngModel)]="yAxisSet.show"/>
+                          <span class="lbl"> 显示</span>
+                        </label>
+                      </div>
+                      <div class="radio" *ngIf="yAxisSet.show&&yAxisSet.axisLine">
+                        <label>
+                          <input name="form-content-yAxis-axisLine-show" type="checkbox" class="ace"
+                                 [(ngModel)]="yAxisSet.axisLine.show"/>
+                          <span class="lbl"> 坐标轴轴线显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLine&&yAxisSet.axisLine.show&&yAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisLine-color" placeholder="坐标轴轴线颜色"
+                                 [(ngModel)]="yAxisSet.axisLine.lineStyle.color"
+                                 (blur)="changeColor('yAxis.'+i+'.axisLine.lineStyle.color','form-yAxisLine-color')"
+                                 name="yAxisLineColor" #yAxisLineColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLine&&yAxisSet.axisLine.show&&yAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="yAxisLineType" id="form-yAxis-lineStyle-type"
+                                  [(ngModel)]="yAxisSet.axisLine.lineStyle.type">
+                            <option value="solid"><i class="ace-icon fa fa-align-left"></i> 实线型</option>
+                            <option value="dashed"><i class="ace-icon fa fa-align-center"></i> 虚线型</option>
+                            <option value="dotted"><i class="ace-icon fa fa-align-right"></i> 散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLine&&yAxisSet.axisLine.show&&yAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线阴影的模糊大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxis-lineStyle-shadowBlur" placeholder="坐标轴轴线阴影的模糊大小"
+                                 [(ngModel)]="yAxisSet.axisLine.lineStyle.shadowBlur"
+                                 name="yAxisSetAxisLineShadowBlur" #yAxisSetAxisLineShadowBlurRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLine&&yAxisSet.axisLine.show&&yAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线阴影的阴影颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxis-lineStyle-shadow-color" placeholder="坐标轴轴线阴影的阴影颜色"
+                                 [(ngModel)]="yAxisSet.axisLine.lineStyle.shadowColor"
+                                 (blur)="changeColor('yAxis.'+i+'.axisLine.lineStyle.shadowColor','form-yAxis-lineStyle-shadow-color')"
+                                 name="yAxisSetAxisLineShadowColor" #yAxisSetAxisLineShadowColorRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLine&&yAxisSet.axisLine.show&&yAxisSet.axisLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴轴线透明度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxis-lineStyle-opacity" placeholder="坐标轴轴线透明度"
+                                 [(ngModel)]="yAxisSet.axisLine.lineStyle.opacity"
+                                 name="yAxisSetAxisLineeOpacity" #yAxisSetAxisLineOpacityRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="yAxisSet.show&&yAxisSet.axisTick">
+                        <label>
+                          <input name="form-content-yAxis-axisTick-show" type="checkbox" class="ace"
+                                 [(ngModel)]="yAxisSet.axisTick.show"/>
+                          <span class="lbl"> 坐标轴刻度显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisTick&&yAxisSet.axisTick.show&&yAxisSet.axisTick.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisTick-color" placeholder="坐标轴刻度颜色"
+                                 [(ngModel)]="yAxisSet.axisTick.lineStyle.color"
+                                 (blur)="changeColor('yAxis.'+i+'.axisTick.lineStyle.color','form-yAxisTick-color')"
+                                 name="yAxisTickColor" #yAxisTickColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisTick&&yAxisSet.axisTick.show&&yAxisSet.axisTick.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="yAxisTickType" id="form-yAxisTick-lineStyle-type"
+                                  [(ngModel)]="yAxisSet.axisTick.lineStyle.type">
+                            <option value="solid"><i class="ace-icon fa fa-align-left"></i> 实线型</option>
+                            <option value="dashed"><i class="ace-icon fa fa-align-center"></i> 虚线型</option>
+                            <option value="dotted"><i class="ace-icon fa fa-align-right"></i> 散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="yAxisSet.show&&yAxisSet.axisLabel">
+                        <label>
+                          <input name="form-content-yAxis-axisLabel-show" type="checkbox" class="ace"
+                                 [(ngModel)]="yAxisSet.axisLabel.show"/>
+                          <span class="lbl"> 坐标轴刻度标签显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLabel&&yAxisSet.axisLabel.show&&yAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisLabel-color" placeholder="坐标轴刻度标签字体颜色"
+                                 [(ngModel)]="yAxisSet.axisLabel.textStyle.color"
+                                 (blur)="changeColor('yAxis.'+i+'.axisLabel.textStyle.color','form-yAxisLabel-color')"
+                                 name="yAxisLabelColor"
+                                 #yAxisLabelColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLabel&&yAxisSet.axisLabel.show&&yAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisLabel-fontSize" placeholder="坐标轴刻度标签字体大小"
+                                 [(ngModel)]="yAxisSet.axisLabel.textStyle.fontSize"
+                                 name="yAxisLabelFontSize" #yAxisLabelFontSizeRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.axisLabel&&yAxisSet.axisLabel.show&&yAxisSet.axisLabel.textStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴刻度标签字体粗细</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisLabel-fontWeight" placeholder="坐标轴刻度标签字体粗细"
+                                 [(ngModel)]="yAxisSet.axisLabel.textStyle.fontWeight"
+                                 name="yAxisLabelFontWeight" #yAxisLabelFontWeightRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="yAxisSet.show&&yAxisSet.splitLine">
+                        <label>
+                          <input name="form-content-yAxis-splitLine-show" type="checkbox" class="ace"
+                                 [(ngModel)]="yAxisSet.splitLine.show"/>
+                          <span class="lbl"> 坐标轴分隔线显示</span>
+                        </label>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.splitLine&&yAxisSet.splitLine.show&&yAxisSet.splitLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴分隔线颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-yAxisSplitLine-color" placeholder="坐标轴分隔线颜色"
+                                 [(ngModel)]="yAxisSet.splitLine.lineStyle.color"
+                                 (blur)="changeColor('yAxis.'+i+'.splitLine.lineStyle.color','form-yAxisSplitLine-color')"
+                                 name="yAxisSplitLineColor"
+                                 #yAxisSplitLineColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="yAxisSet.show&&yAxisSet.splitLine&&yAxisSet.splitLine.show&&yAxisSet.splitLine.lineStyle">
+                        <div class="col-sm-4">
+                          <h6>坐标轴分隔线类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="yAxisSplitLineType" id="form-yAxis-splitLine-type"
+                                  [(ngModel)]="yAxisSet.splitLine.lineStyle.type">
+                            <option value="solid">实线型</option>
+                            <option value="dashed">虚线型</option>
+                            <option value="dotted">散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="{{serie.name}}系列设置" *ngFor="let serie of widget.content.series; let i=index">
+                <ng-template ngbTabContent>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label no-padding-right">系列设置
+                      <span class="help-button" placement="top"
+                            ngbPopover="不同类型的图表系列设置，包括折线图、柱状图、饼图等的名称、图形上的文本标签等的设置。"
+                            triggers="mouseenter:mouseleave" popoverTitle="系列设置">?</span>
+                    </label>
+                    <div class="col-sm-10">
+                      <div class="radio" *ngIf="serie.type == 'line'">
+                        <label>
+                          <input name="form-series-smooth" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.smooth"/>
+                          <span class="lbl"> 是否平滑曲线显示</span>
+                        </label>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-4">
+                          <h6>系列名称</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-name" placeholder="系列名称" [(ngModel)]="serie.name"
+                                 name="seriesName" #seriesNameRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'bar'">
+                        <div class="col-sm-4">
+                          <h6>类目间柱形距离</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-barCategoryGap" placeholder="类目间柱形距离"
+                                 [(ngModel)]="serie.barCategoryGap" name="seriesBarCategoryGap"
+                                 #seriesBarCategoryGapRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'bar'">
+                        <div class="col-sm-4">
+                          <h6>柱条宽度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-barWidth" placeholder="柱条宽度（不设置时自适应）"
+                                 [(ngModel)]="serie.barWidth" name="seriesBarWidth"
+                                 #seriesbBarWidthRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'bar'">
+                        <div class="col-sm-4">
+                          <h6>柱间距离</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-barGap" placeholder="柱间距离（系列最后一个bar上生效）"
+                                 [(ngModel)]="serie.barGap" name="seriesBarGap"
+                                 #seriesbBarGapRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="serie.label&&serie.label.normal">
+                        <label>
+                          <input name="form-series-label-normal-show" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.label.normal.show"/>
+                          <span class="lbl"> 是否显示标签</span>
+                        </label>
+                      </div>
+                      <div class="row" *ngIf="serie.label&&serie.label.normal&&serie.label.normal.show">
+                        <div class="col-sm-4">
+                          <h6>标签位置</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="seriesLabelNormalPosition" id="form-series-label-normal-position"
+                                  [(ngModel)]="serie.label.normal.position"
+                                  class="col-sm-7">
+                            <option value="top">top</option>
+                            <option value="left">left</option>
+                            <option value="right">right</option>
+                            <option value="bottom">bottom</option>
+                            <option value="inside">inside</option>
+                            <option value="insideLeft">insideLeft</option>
+                            <option value="insideRight">insideRight</option>
+                            <option value="insideTop">insideTop</option>
+                            <option value="insideBottom">insideBottom</option>
+                            <option value="insideTopLeft">insideTopLeft</option>
+                            <option value="insideBottomLeft">insideBottomLeft</option>
+                            <option value="insideTopRight">insideTopRight</option>
+                            <option value="insideBottomRight">insideBottomRight</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="serie.label&&serie.label.normal&&serie.label.normal.show&&serie.label.normal.textStyle">
+                        <div class="col-sm-4">
+                          <h6>标签字体颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-serieLabel-color" placeholder="标签字体颜色"
+                                 [(ngModel)]="serie.label.normal.textStyle.color"
+                                 (blur)="changeColor('series.'+i+'.label.normal.textStyle.color','form-serieLabel-color')"
+                                 name="serieLabelColor" #serieLabelColorRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="serie.label&&serie.label.normal&&serie.label.normal.show&&serie.label.normal.textStyle">
+                        <div class="col-sm-4">
+                          <h6>标签字体大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-serieLabel-fontSize" placeholder="标签字体大小"
+                                 [(ngModel)]="serie.label.normal.textStyle.fontSize"
+                                 name="serieLabelFontSize" #serieLabelFontSizeRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row"
+                           *ngIf="serie.label&&serie.label.normal&&serie.label.normal.show&&serie.label.normal.textStyle">
+                        <div class="col-sm-4">
+                          <h6>标签字体粗细</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-serieLabel-fontWeight" placeholder="标签字体粗细"
+                                 [(ngModel)]="serie.label.normal.textStyle.fontWeight"
+                                 name="serieLabelFontWeight" #serieLabelFontWeightRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-color" placeholder="图形颜色"
+                                 [(ngModel)]="serie.itemStyle.normal.color"
+                                 (blur)="changeColor('series.'+i+'.itemStyle.normal.color','form-series-itemStyle-normal-color')"
+                                 name="seriesItemStyleColor" #seriesItemStyleColorRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形描边颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-border-color" placeholder="图形描边颜色"
+                                 [(ngModel)]="serie.itemStyle.normal.borderColor"
+                                 (blur)="changeColor('series.'+i+'.itemStyle.normal.borderColor','form-series-itemStyle-normal-border-color')"
+                                 name="seriesItemStyleBorderColor" #seriesItemStyleBorderColorRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形描边宽度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-border-width" placeholder="图形描边宽度"
+                                 [(ngModel)]="serie.itemStyle.normal.borderWidth"
+                                 name="seriesItemStyleBorderWidth" #seriesItemStyleBorderWidthRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形描边类型</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <select name="serieItemStyleBorderType" id="form-serie-itemStyle-normal-borderType"
+                                  [(ngModel)]="serie.itemStyle.normal.borderType">
+                            <option value="solid">实线型</option>
+                            <option value="dashed">虚线型</option>
+                            <option value="dotted">散点型</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal&&serie.type=='bar'">
+                        <div class="col-sm-4">
+                          <h6>柱形边框圆角半径</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-barBorderRadius" placeholder="柱形边框圆角半径"
+                                 [(ngModel)]="serie.itemStyle.normal.barBorderRadius"
+                                 name="seriesItemStyleBarBorderRadius" #seriesItemStyleBarBorderRadiusRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形阴影的模糊大小</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-shadowBlur" placeholder="图形阴影的模糊大小"
+                                 [(ngModel)]="serie.itemStyle.normal.shadowBlur"
+                                 name="seriesItemStyleShadowBlur" #seriesItemStyleShadowBlurRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形阴影的阴影颜色</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-shadow-color" placeholder="图形阴影的阴影颜色"
+                                 [(ngModel)]="serie.itemStyle.normal.shadowColor"
+                                 (blur)="changeColor('series.'+i+'.itemStyle.normal.shadowColor','form-series-itemStyle-normal-shadow-color')"
+                                 name="seriesItemStyleShadowColor" #seriesItemStyleShadowColorRef="ngModel"
+                                 class="col-xs-10 col-sm-7"
+                          />
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.itemStyle&&serie.itemStyle.normal">
+                        <div class="col-sm-4">
+                          <h6>图形透明度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-itemStyle-normal-opacity" placeholder="图形透明度"
+                                 [(ngModel)]="serie.itemStyle.normal.opacity"
+                                 name="seriesItemStyleOpacity" #seriesItemStyleOpacityRef="ngModel"
+                                 class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'pie'&&serie.center">
+                        <div class="col-sm-4">
+                          <h6>饼图的中心（圆心）坐标</h6>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>横坐标</div>
+                          <input type="text" id="form-series-center-x" placeholder="横坐标" [(ngModel)]="serie.center[0]"
+                                 name="seriesCenterX" #seriesCenterXRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>纵坐标</div>
+                          <input type="text" id="form-series-center-y" placeholder="纵坐标" [(ngModel)]="serie.center[1]"
+                                 name="seriesCenterY" #seriesCenterYRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'pie'&&serie.radius">
+                        <div class="col-sm-4">
+                          <h6>饼图的半径</h6>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>内半径</div>
+                          <input type="text" id="form-series-radius-x" placeholder="内半径" [(ngModel)]="serie.radius[0]"
+                                 name="seriesRadiusX" #seriesRadiusXRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                        <div class="col-sm-2">
+                          <div>外半径</div>
+                          <input type="text" id="form-series-radius-y" placeholder="外半径" [(ngModel)]="serie.radius[1]"
+                                 name="seriesRadiusY" #seriesRadiusYRef="ngModel"
+                                 class="col-sm-10"/>
+                        </div>
+                      </div>
+                      <div class="row" *ngIf="serie.type == 'pie'">
+                        <div class="col-sm-4">
+                          <h6>起始角度</h6>
+                        </div>
+                        <div class="col-sm-8">
+                          <input type="text" id="form-series-startAngle" placeholder="起始角度"
+                                 [(ngModel)]="serie.startAngle" name="seriesStartAngle"
+                                 #seriesStartAngleRef="ngModel" class="col-xs-10 col-sm-7"/>
+                        </div>
+                      </div>
+                      <div class="radio" *ngIf="serie.type == 'pie'">
+                        <label>
+                          <input name="form-series-clockwise" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.clockwise"/>
+                          <span class="lbl"> 扇区是否是顺时针排布</span>
+                        </label>
+                      </div>
+                      <div class="radio" *ngIf="serie.type == 'pie'">
+                        <label>
+                          <input name="form-series-hoverAnimation" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.hoverAnimation"/>
+                          <span class="lbl"> 是否开启 hover 在扇区上的放大动画效果</span>
+                        </label>
+                      </div>
+                      <div class="radio" *ngIf="serie.type == 'pie'">
+                        <label>
+                          <input name="form-series-avoidLabelOverlap" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.avoidLabelOverlap"/>
+                          <span class="lbl"> 是否启用防止标签重叠策略</span>
+                        </label>
+                      </div>
+                      <div class="radio" *ngIf="serie.type == 'pie'">
+                        <label>
+                          <input name="form-series-legendHoverLink" type="checkbox" class="ace"
+                                 [(ngModel)]="serie.legendHoverLink"/>
+                          <span class="lbl"> 是否启用图例 hover 时的联动高亮</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+            </ngb-tabset>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label no-padding-right"></label>
+          <div class="col-sm-10">
+            <button class="btn btn-info btn-xs" type="submit" [disabled]="!formRef.form.valid">
+              <i class="ace-icon fa fa-check bigger-110"></i>
+              保存
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss('Close click')">Close</button>
+</div>
